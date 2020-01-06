@@ -32,7 +32,7 @@ function Home() {
     })
   }, [firebase])
 
-  if (loading) return null
+  if (loading) return <h1>Загрузка...</h1>
 
   return (
     <Container maxWidth="lg">
