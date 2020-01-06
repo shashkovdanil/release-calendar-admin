@@ -71,7 +71,7 @@ function ReleaseList({
             </ListItem>
             <ListItem alignItems="flex-start">
               <div
-                style={{ display: 'flex', flexDirection: 'column', width: 560 }}
+                style={{ display: 'flex', flexDirection: 'column', width: 360 }}
               >
                 <button
                   type="button"

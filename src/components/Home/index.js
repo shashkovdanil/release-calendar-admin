@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Formik, Form } from 'formik'
-import { Typography, Button, Container } from '@material-ui/core'
+import { Button, Container } from '@material-ui/core'
 import JSONPretty from 'react-json-pretty'
+import omit from 'lodash/omit'
 import { useCheckAuth } from '../Session'
 import { FirebaseContext } from '../Firebase'
 import TypeList from './type-list'
@@ -51,47 +52,8 @@ function Home() {
           submitCount,
           setFieldValue,
         }) => {
-          const bgWidget = window.cloudinary.createUploadWidget(
-            {
-              cloudName: process.env.REACT_APP_CLOUDINARY_CLOUD_NAME,
-              uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET,
-            },
-            (error, result) => {
-              if (!error && result && result.event === 'success') {
-                setFieldValue('settings.main_image', result.info.secure_url)
-              }
-            },
-          )
-
           return (
             <Form>
-              <Typography
-                style={{
-                  fontSize: '3rem',
-                  fontWeight: 'bold',
-                }}
-                component="h2"
-              >
-                Settings
-              </Typography>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', width: 560 }}
-              >
-                <button
-                  type="button"
-                  className="cloudinary-button"
-                  onClick={() => {
-                    bgWidget.open()
-                  }}
-                >
-                  Загрузить бэкграунд
-                </button>
-                <img
-                  style={{ maxWidth: '100%', marginTop: 12 }}
-                  src={values.settings.main_image}
-                  alt=""
-                />
-              </div>
               <TypeList values={values} setValues={setValues}>
                 {type => (
                   <YearList
@@ -107,10 +69,14 @@ function Home() {
                         year={year}
                         values={values}
                         setValues={setValues}
+                        setFieldValue={setFieldValue}
                       >
                         {month => (
                           <ReleaseList
-                            releasesObject={values[type][year][month]}
+                            releasesObject={omit(
+                              values[type][year][month],
+                              'main',
+                            )}
                             type={type}
                             year={year}
                             month={month}
@@ -138,7 +104,7 @@ function Home() {
                 {Object.keys(errors).length > 0 && (
                   <div style={{ marginTop: 12 }}>
                     Походу ты допустил ошибки при заполнении, поскролль и поищи
-                    их
+                    их ({JSON.stringify(errors)})
                   </div>
                 )}
               </div>

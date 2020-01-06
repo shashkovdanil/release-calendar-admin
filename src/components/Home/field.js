@@ -12,7 +12,7 @@ function Field({ validate, ...rest }) {
           error={meta.error && meta.touched}
           helperText={meta.error}
           style={{
-            width: 560,
+            width: 360,
           }}
           {...rest}
         />
