@@ -27,6 +27,8 @@ function SignIn() {
 
   return (
     <Container maxWidth="sm" style={{ marginTop: 90 }}>
+      <h1>Админка проекта Release Calendar</h1>
+      <h2>Вход</h2>
       <Formik
         initialValues={{
           email: '',
@@ -68,6 +70,9 @@ function SignIn() {
                 error={errors.email && touched.email}
                 helperText={errors.email}
                 variant="outlined"
+                style={{
+                  marginBottom: 24,
+                }}
               />
               <TextField
                 type="password"
@@ -81,8 +86,18 @@ function SignIn() {
                 error={errors.password && touched.password}
                 helperText={errors.password}
                 variant="outlined"
+                style={{
+                  marginBottom: 24,
+                }}
               />
-              <Button type="submit">Войти</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+              >
+                Войти
+              </Button>
             </FormGroup>
           </Form>
         )}

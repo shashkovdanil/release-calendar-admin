@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Formik, Form } from 'formik'
+import { useDispatch, useSelector } from 'react-redux'
 import { Button, Container } from '@material-ui/core'
 import JSONPretty from 'react-json-pretty'
-import omit from 'lodash/omit'
 import { useCheckAuth } from '../Session'
 import { FirebaseContext } from '../Firebase'
 import TypeList from './type-list'
 import YearList from './year-list'
 import MonthList from './month-list'
 import ReleaseList from './release-list'
+import { initDB } from '../../actions/db'
 
 function Home() {
-  const [db, setDb] = useState({})
   const [json, setJson] = useState('')
   const [loading, setLoading] = useState(true)
+
+  const dispatch = useDispatch()
+  const db = useSelector(state => state.db)
 
   const condition = authUser => !!authUser
   useCheckAuth(condition)
@@ -24,68 +27,50 @@ function Home() {
     firebase.getDB().on('value', snapshot => {
       const db = snapshot.val()
       if (db !== null) {
-        setDb(db)
+        dispatch(initDB(db))
         setLoading(false)
       } else {
-        setDb({})
+        dispatch({})
         setLoading(false)
       }
     })
-  }, [firebase])
+  }, []) // eslint-disable-line
 
   if (loading) return <h1>Загрузка...</h1>
 
   return (
     <Container maxWidth="lg">
+      <Button
+        style={{
+          margin: '24px 0',
+        }}
+        type="button"
+        variant="contained"
+        color="primary"
+        size="large"
+        onClick={() => {
+          firebase.doSignOut()
+        }}
+      >
+        Выйти из аккаунта
+      </Button>
       <Formik
         initialValues={db}
         onSubmit={values => {
           setJson(values)
         }}
+        enableReinitialize
       >
-        {({
-          values,
-          setValues,
-          handleChange,
-          handleBlur,
-          errors,
-          submitCount,
-          setFieldValue,
-        }) => {
+        {({ handleChange, handleBlur, errors, submitCount, setFieldValue }) => {
           return (
             <Form>
-              <TypeList values={values} setValues={setValues}>
+              <TypeList>
                 {type => (
-                  <YearList
-                    years={Object.keys(values[type])}
-                    type={type}
-                    values={values}
-                    setValues={setValues}
-                  >
+                  <YearList type={type}>
                     {year => (
-                      <MonthList
-                        months={Object.keys(values[type][year])}
-                        type={type}
-                        year={year}
-                        values={values}
-                        setValues={setValues}
-                        setFieldValue={setFieldValue}
-                      >
+                      <MonthList type={type} year={year}>
                         {month => (
-                          <ReleaseList
-                            releasesObject={omit(
-                              values[type][year][month],
-                              'main',
-                            )}
-                            type={type}
-                            year={year}
-                            month={month}
-                            handleChange={handleChange}
-                            handleBlur={handleBlur}
-                            setFieldValue={setFieldValue}
-                            values={values}
-                            setValues={setValues}
-                          />
+                          <ReleaseList type={type} year={year} month={month} />
                         )}
                       </MonthList>
                     )}

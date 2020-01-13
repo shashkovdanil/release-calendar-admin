@@ -1,14 +1,18 @@
 import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { List, ListItem, IconButton, Button } from '@material-ui/core'
 import { Delete } from '@material-ui/icons'
-import last from 'lodash/last'
+import { removeYear, addMonth } from '../../actions/db'
 
-function YearList({ years, type, children, values, setValues }) {
-  return years.map((year, index) => {
-    const months = Object.keys(values[type][year])
-    const lastMonth = +last(months) + 1 || 0
-    const hasAddMonthButton = lastMonth <= 11
-    const hasDeleteYearButton = last(years) === year
+function YearList({ type, children }) {
+  const years = useSelector(state => state.db[type])
+  const dispatch = useDispatch()
+  const yearList = Object.keys(years)
+
+  return yearList.map((year, index, array) => {
+    const months = years[year]
+    const hasAddMonthButton = !Object.keys(months).includes('11')
+    const hasDeleteYearButton = index === array.length - 1
 
     return (
       <React.Fragment key={`${type}_${year}`}>
@@ -30,10 +34,7 @@ function YearList({ years, type, children, values, setValues }) {
               variant="contained"
               color="secondary"
               onClick={() => {
-                const copyValues = { ...values }
-
-                copyValues[type][year][lastMonth] = {}
-                setValues(copyValues)
+                dispatch(addMonth(type, year))
               }}
             >
               Добавить месяц
@@ -47,12 +48,10 @@ function YearList({ years, type, children, values, setValues }) {
               marginBottom: 24,
             }}
           >
-            {years.length > 1 && (
+            {array.length > 1 && (
               <IconButton
                 onClick={() => {
-                  const copyValues = { ...values }
-                  delete copyValues[type][year]
-                  setValues(copyValues)
+                  dispatch(removeYear(type, year))
                 }}
               >
                 <Delete />

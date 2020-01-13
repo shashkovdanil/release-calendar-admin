@@ -1,13 +1,16 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import { Typography, List, Button } from '@material-ui/core'
-import last from 'lodash/last'
+import { addYear } from '../../actions/db'
 
 const types = [
   { type: 'films', title: 'Фильмы' },
   { type: 'games', title: 'Игры' },
 ]
 
-function TypeList({ children, values, setValues }) {
+function TypeList({ children }) {
+  const dispatch = useDispatch()
+
   return types.map(({ type, title }) => (
     <React.Fragment key={type}>
       <Typography
@@ -25,15 +28,7 @@ function TypeList({ children, values, setValues }) {
         variant="contained"
         color="secondary"
         onClick={() => {
-          const copyValues = { ...values }
-          const years = Object.keys(values[type])
-
-          const lastYear = +last(years) + 1 || new Date().getFullYear()
-
-          copyValues[type][lastYear] = {
-            '0': {},
-          }
-          setValues(copyValues)
+          dispatch(addYear(type))
         }}
       >
         Добавить год

@@ -5,7 +5,7 @@ import { TextField } from '@material-ui/core'
 function Field({ validate, ...rest }) {
   return (
     <FormikField name={rest.name} validate={validate}>
-      {({ meta }) => (
+      {({ meta, field }) => (
         <TextField
           variant="outlined"
           id={rest.name}
@@ -13,6 +13,10 @@ function Field({ validate, ...rest }) {
           helperText={meta.error}
           style={{
             width: 360,
+          }}
+          {...field}
+          onChange={e => {
+            rest.onChange(e)
           }}
           {...rest}
         />

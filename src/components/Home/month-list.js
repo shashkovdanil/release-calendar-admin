@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { Fragment } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { List, ListItem, Button, IconButton } from '@material-ui/core'
 import { Delete } from '@material-ui/icons'
 import last from 'lodash/last'
-import nanoid from 'nanoid'
+import { removeMonth, setMonthBackground, addRelease } from '../../actions/db'
+import { cloudinary as config } from '../../constants/config'
 
 const monthsList = [
   'Январь',
@@ -19,94 +21,74 @@ const monthsList = [
   'Декабрь',
 ]
 
-function MonthList({
-  months,
-  type,
-  year,
-  children,
-  values,
-  setValues,
-  setFieldValue,
-}) {
-  return months.map(month => {
-    const bgWidget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: process.env.REACT_APP_CLOUDINARY_CLOUD_NAME,
-        uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET,
-      },
-      (error, result) => {
-        console.log(error)
-        if (!error && result && result.event === 'success') {
-          setFieldValue(`${type}.${year}.${month}.main`, result.info.secure_url)
-        }
-      },
-    )
+function MonthList({ type, year, children }) {
+  const dispatch = useDispatch()
+  const months = useSelector(state => state.db[type][year])
+  const monthList = Object.keys(months)
 
-    return (
-      <React.Fragment key={`${type}_${year}_${month}`}>
-        <ListItem style={{ fontSize: '1.6rem' }} alignItems="flex-start">
-          <div>
-            {monthsList[month]}
-            <div
-              style={{ display: 'flex', flexDirection: 'column', width: 360 }}
-            >
-              <button
-                style={{ marginTop: 12 }}
-                type="button"
-                className="cloudinary-button"
-                onClick={() => {
-                  bgWidget.open()
-                }}
-              >
-                Загрузить бэкграунд месяца
-              </button>
-              <img
-                style={{ maxWidth: '100%', marginTop: 12 }}
-                src={values[type][year][month].main}
-                alt=""
-              />
-            </div>
-          </div>
-          <List style={{ paddingTop: 30 }}>{children(month)}</List>
-        </ListItem>
-        <ListItem>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              const id = nanoid(8)
-              const copyValues = {
-                ...values,
-              }
-              copyValues[type][year][month][id] = {
-                name: '',
-                cover: '',
-                release_day: '1',
-                info: '',
-                width: '160',
-              }
-              setValues(copyValues)
-            }}
-          >
-            Добавить релиз
-          </Button>
-        </ListItem>
-        <ListItem>
-          {last(months) === month && months.length > 1 && (
-            <IconButton
+  return monthList.map((month, index, array) => (
+    <Fragment key={`${type}_${year}_${month}`}>
+      <ListItem style={{ fontSize: '1.6rem' }} alignItems="flex-start">
+        <div>
+          {monthsList[month]}
+          <div style={{ display: 'flex', flexDirection: 'column', width: 360 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{ marginTop: 12 }}
+              type="button"
               onClick={() => {
-                const copyValues = { ...values }
-                delete copyValues[type][year][month]
-                setValues(copyValues)
+                window.cloudinary
+                  .createUploadWidget(config, (error, result) => {
+                    if (!error && result && result.event === 'success') {
+                      dispatch(
+                        setMonthBackground(
+                          type,
+                          year,
+                          month,
+                          result.info.secure_url,
+                        ),
+                      )
+                    }
+                  })
+                  .open()
               }}
             >
-              <Delete />
-            </IconButton>
-          )}
-        </ListItem>
-      </React.Fragment>
-    )
-  })
+              Загрузить обложку месяца
+            </Button>
+            <img
+              style={{ maxWidth: '100%', marginTop: 12 }}
+              src={months[month].main}
+              alt=""
+            />
+          </div>
+        </div>
+        <List style={{ paddingTop: 30 }}>{children(month)}</List>
+      </ListItem>
+      <ListItem>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            dispatch(addRelease(type, year, month))
+          }}
+        >
+          Добавить релиз
+        </Button>
+      </ListItem>
+      <ListItem>
+        {last(array) === month && array.length > 1 && (
+          <IconButton
+            onClick={() => {
+              dispatch(removeMonth(type, year, month))
+            }}
+          >
+            <Delete />
+          </IconButton>
+        )}
+      </ListItem>
+    </Fragment>
+  ))
 }
 
 export default MonthList
