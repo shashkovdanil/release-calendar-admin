@@ -35,6 +35,7 @@ function MonthList({
         uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET,
       },
       (error, result) => {
+        console.log(error)
         if (!error && result && result.event === 'success') {
           setFieldValue(`${type}.${year}.${month}.main`, result.info.secure_url)
         }

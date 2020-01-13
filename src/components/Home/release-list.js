@@ -32,6 +32,7 @@ function ReleaseList({
         uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET,
       },
       (error, result) => {
+        console.log(error)
         if (!error && result && result.event === 'success') {
           setFieldValue(baseName + 'cover', result.info.secure_url)
         }
